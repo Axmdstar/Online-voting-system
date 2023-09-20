@@ -13,7 +13,7 @@ from sqlalchemy.orm import session, sessionmaker, relationship
 
 app = Flask(__name__)
 app.secret_key = '1227kgjs68&*jhfdjs'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///VotingSystem.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///VotingSystem.sqlite'
 app.config['JSONIFY_MIMETYPE'] = 'application/json'
 db = sq(app)
 login_manager = LoginManager(app)
@@ -107,12 +107,14 @@ def Logout():
 def admin_login():
 
     if current_user.is_authenticated:
+        print("Authen")
         return redirect(url_for('AdminHome'))
 
     Form = admin_login_form()
  
     if Form.validate_on_submit():
         user = AdminUser.query.filter_by(username=Form.username.data).first()
+
         if user and Form.password.data == user.password:
             flash(f"Successfully logged in" , category="success")
             login_user(user)
@@ -191,6 +193,7 @@ def CandidateRegistration():
             electioName = request.form.get('ElecName')
             election = db.session.query(Elections).filter_by(ElectionName=electioName).first()
             
+            print(max_id,"<<<<<<<<")
             
             id = max_id
             electionId = election.id
@@ -226,30 +229,38 @@ def elections():
 
 
 
-@app.route('/admin/Candidates' , methods=['POST'])
-def candidatesPAge():
-    if request.method == 'POST':
-        try:
-            election_id = request.json['election']
-
-
-            print("Election ID: ",  election_id)
+@app.route('/admin/getcandidates' , methods=['POST'])
+def getcandidates():
+        
+        # try:
+            election_id = request.get_json()
+            print("Election ID:>>>>>>>>>>>>>>>> \n\n ",  election_id)
             # if request.method == 'GET':
 
             candidate = db.session.query(candidates).filter(candidates.electionsId == election_id).all()
             election = db.session.query(Elections).filter(Elections.id == election_id).first()
             print("election: ", election)
             print("Canndidate:" , candidate)
-            response_data = {'message': 'Success'}
-            new = {'Data': 'New data'}
-            print(jsonify(new))
-            return jsonify(response_data)
+            data = {"title":"Candidates", "id":election_id}
+            return jsonify(data)
             # return render_template('admin/candidates.html', title='Candidates', election=election, candidates=candidate, user=current_user)
+            # return redirect(url_for('CandidatePage'))
             # print("Hello!")
-        except Exception as e:
-            error_response = {'error': 'Invalid data', 'details': str(e)}
-            return jsonify(error_response), 400
+        # except Exception as e :
+        #     error_response = {'error': 'Try Failed >>>>>>>', 'details': str(e)}
+        #     return jsonify(error_response), 500
 
+
+@app.route("/admin/candidates")
+def CandidatePage():
+    id = request.args.get("id")
+    title = request.args.get("title")
+    print(id, title , ">>>>>>>>>>>>>>>>>>>")
+
+    candidate = db.session.query(candidates).filter(candidates.electionsId == id).all()
+    election = db.session.query(Elections).filter(Elections.id == id).first()
+
+    return render_template('admin/candidates.html', title=title, election=election, candidates=candidate, user=current_user)
 
 
 

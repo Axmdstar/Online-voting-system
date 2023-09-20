@@ -31,9 +31,10 @@
           <div class="buttonsActions">
             <a class="button edit-btn" data-election="{{ election.id }}" href="#">Edit</a>
             <a class="button two" href="#">Delete</a>
-            <a class="button edit-btn" data-election="{{ election.id }}"  href="{{ url_for('candidatesPAge')}}">View candidates</a>
+            <a class="button edit-btn" data-election="{{ election.id }}" onclick=Candidates(event)>View candidates</a>
             {% endfor %}
-            <a href="" class="d" val ></a>
+            <a href="" class="d" val></a>
+        </td>
     </tbody>
 
   </table>
@@ -41,29 +42,48 @@
 
 <script>
   // Shorthand version of $(document).ready()
-  $(function () {
-    // Add click event listener to the edit buttons
-    $('.edit-btn').click(function () {
-      const election = $(this).data('election');
-      const url = '/admin/Candidates';  // The endpoint URL where you want to send the election ID
+const Candidates = (e)=>{
+   const id = e.target.getAttribute("data-election");
+   const url = '/admin/getcandidates';
 
-      // Send data to the server using AJAX (POST request)
-      $.ajax({
-        url: url,
-        method: 'POST',
-        contentType : 'application/json', // Set content type to JSON
-        data: JSON.stringify({ election: election }),  // Data to send to the server
-        success: function (response) {
-          // Handle the response from the server if needed
-          console.log(response);
-        },
-        error: function (error) {
-          // Handle errors
-          console.error('Error:', error);
-        }
-      });
-    });
-  });
+   fetch(url, {
+    method:"post",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(id)
+   })
+   .then((res) => res.json())
+   .then((res) => {
+    console.log('res :>> ', res);
+    const id = res.id;
+    const title = res.title;
+    const url = `/admin/candidates?id=${id}&title=${title}`;
+    window.location.replace(url);
+   })
+   .catch((err) => {console.log(err);})
+};
+  // $(function () {
+  //   // Add click event listener to the edit buttons
+  //   $('.edit-btn').click(function () {
+  //     const election = $(this).data('election');
+  //     const url = '/admin/Candidates';  // The endpoint URL where you want to send the election ID
+
+  //     // Send data to the server using AJAX (POST request)
+  //     $.ajax({
+  //       url: url,
+  //       method: 'POST',
+  //       contentType : 'application/json', // Set content type to JSON
+  //       data: JSON.stringify({ election: election }),  // Data to send to the server
+  //       success: function (response) {
+  //         // Handle the response from the server if needed
+  //         console.log(response);
+  //       },
+  //       error: function (error) {
+  //         // Handle errors
+  //         console.error('Error:', error);
+  //       }
+  //     });
+  //   });
+  // });
 </script>
 
 
